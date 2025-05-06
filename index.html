@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Kapil Kumar">
+    <link rel="shortcut icon" href="weather favicon.jpg" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="description" content="Weather Forecast Application Development in JavaScript">
+    <meta name="keywords" content="Weather, Forecast, JavaScript, Application, Development">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+</head>
+<body class="bg-blue-300">
+    <h1 class="
+    py-10 
+    px-5
+    text-white
+    bg-red-800 
+    text-4xl">Weather Forecast Application</h1>
+    <div class="container"></div>
+        <div class="search-box">
+            <input class="m-5 items-center" type="text" id="city-input" placeholder="Enter city name...">
+            <button id="search-button">Search</button>
+        </div>
+        <div id="weather-info" class="m-5"></div>
+        <div id="forecast-info" class="m-5"></div>
+    
+    <script src="weather.js"></script>
+
+    <script>
+        document.getElementById('search-button').addEventListener('click', function() {
+            const city = document.getElementById('city-input').value;
+            const weatherInfoDiv = document.getElementById('weather-info');
+            const forecastInfoDiv = document.getElementById('forecast-info');
+            weatherInfoDiv.innerHTML = '';
+            forecastInfoDiv.innerHTML = '';
+
+            if (city) {
+                // Current weather API call
+                fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=368436de84e24c0fb95c10971ca7280a&units=metric`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.cod === 200) {
+                            const weatherInfo = `Weather in ${data.name}: ${data.weather[0].description}, Temperature: ${data.main.temp}°C`;
+                            weatherInfoDiv.innerHTML = `<p>${weatherInfo}</p>`;
+                        } else {
+                            alert('City not found!');
+                        }
+                    })
+                    .catch(error => console.error('Error fetching weather data:', error));
+
+                // 5-day forecast API call
+                fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=368436de84e24c0fb95c10971ca7280a&units=metric`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.cod === "200") {
+                            const forecastList = data.list.filter((_, index) => index % 8 === 0); // Get daily forecasts (every 24 hours)
+                            let forecastHTML = '<h2>5-Day Forecast:</h2>';
+                            forecastList.forEach(forecast => {
+                                const date = new Date(forecast.dt * 1000).toLocaleDateString();
+                                const description = forecast.weather[0].description;
+                                const temp = forecast.main.temp;
+                                forecastHTML += `<p>${date}: ${description}, Temperature: ${temp}°C</p>`;
+                            });
+                            forecastInfoDiv.innerHTML = forecastHTML;
+                        } else {
+                            alert('Error fetching forecast data!');
+                        }
+                    })
+                    .catch(error => console.error('Error fetching forecast data:', error));
+            } else {
+                alert('Please enter a city name!');
+            }
+        });
+    </script>
+</body>
+</html>
